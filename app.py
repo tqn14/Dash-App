@@ -13,9 +13,21 @@ order['Year'] = order['Ship Date'].dt.year
 tmp = order.groupby(['Customer ID', 'Country', 'Year']).sum('Sales').sort_values(by = 'Sales', ascending=False).reset_index()
 tmp['Postal Code'] = tmp['Postal Code'].astype('int', errors='ignore')
 
+tmp2 = order.groupby(['Product ID', 'Category','Sub-Category', 'Product Name']).agg({'Sales': sum, 'Profit': sum, 'Quantity': sum}).sort_values(by = ['Sales', 'Profit', 'Quantity'], ascending=False).reset_index()
+tmp2['Product_ID_Cat'] = tmp2['Product ID'].astype('str') + '_' + tmp2['Sub-Category'].astype('str')
+
+tmp3 = tmp2.iloc[:10, :][['Product_ID_Cat', 'Sales', 'Profit']].set_index('Product_ID_Cat').unstack().to_frame().reset_index()
+tmp3.rename({"level_0": "Index", 0: "Values"}, axis=1, inplace=True)
+tmp3 = tmp3.sort_values(by = 'Index').reset_index(drop=True)
+
 limits = [(0,1000),(1000,5000),(5000,10000),(10000,30000)]
 colors = ["lightgrey","crimson","lightseagreen","royalblue"]
 YEARS = tmp['Year'].unique().tolist()
+
+def plot_bar(df): 
+    fig = px.bar(df, y = 'Product_ID_Cat', x= 'Values', color = 'Index', color_discrete_map={"Sales": "#ffaf4a", 'Profit': "#45b7c2"})
+    fig.update_layout(title = "Top 10 Selling Product 2014-2016", yaxis_title = "Product ID & Sub-Category")
+    return fig
 
 def plot_bb(df, limits): 
     fig = go.Figure()
@@ -47,17 +59,29 @@ def plot_bb(df, limits):
 
 app = Dash(__name__)
 
-app.layout = html.Div(children=[
-    html.H1("Exploring Worldwide Retail Trends: Global Superstore", style={'text-align': 'center'}),
-    html.Div(dcc.Slider(id="slct_year",
-					min=min(YEARS),
-					max=max(YEARS),
-					value=min(YEARS),
-					marks={str(year): {"label": str(year), "style": {"color": "#7fafdf"}} for year in YEARS})),
-
-    html.Div(children = [html.P("Order by Country in {0}".format(min(YEARS)), id = 'worldmap_name', style={'text-align': 'center'}),
-    		dcc.Graph(id = 'world_map', figure=go.Figure())]), 
+app.layout = html.Div(id ='root', children = [
+    html.Div(id = 'header', children=[
+        html.H4("Exploring Worldwide Retail Trends: Global Superstore", style={'text-align': 'center'})]),
+    html.Div(id = 'app-container', children = [ 
+            html.Div(id = 'left-column', 
+            children= [
+                html.Div(id="slider-container",
+                        children=[
+                        html.P(
+                            id="slider-text",
+                            children="Drag the slider to change the year:",
+                        ),
+                        dcc.Slider(id="slct_year",
+                                min=min(YEARS),
+                                max=max(YEARS),
+                                value=min(YEARS),
+                                marks={str(year): {"label": str(year), "style": {"color": "#7fafdf"}} for year in YEARS})]),
+                html.Div(id = 'heatmap-container', children = [html.P("Order by Country in {0}".format(min(YEARS)), id = 'worldmap_name', style={'text-align': 'center'}),
+                        dcc.Graph(id = 'world_map', figure=go.Figure())])
+            ])
+    ])
 ])
+
 
 @app.callback(
     Output('world_map', 'figure'),
