@@ -4,6 +4,8 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output, callback, State
+import warnings
+warnings.filterwarnings('ignore')
 
 order = pd.read_excel("global_superstore_2016.xlsx", sheet_name = "Orders")
 order['Order Date'] = pd.to_datetime(order['Order Date'])
@@ -20,13 +22,26 @@ tmp3 = tmp2.iloc[:10, :][['Product_ID_Cat', 'Sales', 'Profit']].set_index('Produ
 tmp3.rename({"level_0": "Index", 0: "Values"}, axis=1, inplace=True)
 tmp3 = tmp3.sort_values(by = 'Index').reset_index(drop=True)
 
+df1 = order.groupby(['Category', 'Year']).agg({"Sales": sum}).reset_index()
+df2 = order.groupby(['Sub-Category', 'Year']).agg({"Sales": sum}).reset_index()
+
 limits = [(0,1000),(1000,5000),(5000,10000),(10000,30000)]
 colors = ["lightgrey","crimson","lightseagreen","royalblue"]
 YEARS = tmp['Year'].unique().tolist()
 
 def plot_bar(df): 
     fig = px.bar(df, y = 'Product_ID_Cat', x= 'Values', color = 'Index', color_discrete_map={"Sales": "#ffaf4a", 'Profit': "#45b7c2"})
-    fig.update_layout(title = "Top 10 Selling Product 2014-2016", yaxis_title = "Product ID & Sub-Category")
+    fig.update_layout(title = "Top 10 Selling Product 2012-2016", yaxis_title = "Product ID & Sub-Category")
+    return fig
+
+def plot_pie_cat(df): 
+    # tmp = df[df['Year'] == year].sort_values(by ='Category').reset_index(drop=True)
+    fig = px.pie(df, values = 'Sales', names = 'Category', color = 'Category', color_discrete_map={"Technology": "#2dc2c2", 'Furniture': "#f4b80f", "Office Supplies": "#de663e"}, width=350, height= 350)
+    return fig
+
+def plot_pie_sub(df): 
+    # tmp = df[df['Year'] == year].sort_values(by ='Sub-Category').reset_index(drop=True)
+    fig = px.pie(df, values = 'Sales', names = 'Sub-Category', color = 'Sub-Category', color_discrete_sequence=px.colors.qualitative.T10 , width=350, height= 350)
     return fig
 
 def plot_bb(df, limits): 
@@ -46,7 +61,7 @@ def plot_bb(df, limits):
                 line_width=0.5,
                 sizemode = 'area'
             ),
-            name = '{0} - {1}'.format(lim[0],lim[1])))
+            name = '${0} - ${1}'.format(lim[0],lim[1])))
     
     fig.update_layout(
         showlegend = True,
@@ -64,7 +79,7 @@ app.layout = html.Div(id ='root', children = [
         html.H4("Exploring Worldwide Retail Trends: Global Superstore", style={'text-align': 'center'})]),
     html.Div(id = 'app-container', children = [ 
             html.Div(id = 'left-column', 
-            children= [
+                children= [
                 html.Div(id="slider-container",
                         children=[
                         html.P(
@@ -75,9 +90,19 @@ app.layout = html.Div(id ='root', children = [
                                 min=min(YEARS),
                                 max=max(YEARS),
                                 value=min(YEARS),
+                                step = 1,
                                 marks={str(year): {"label": str(year), "style": {"color": "#7fafdf"}} for year in YEARS})]),
                 html.Div(id = 'heatmap-container', children = [html.P("Order by Country in {0}".format(min(YEARS)), id = 'worldmap_name', style={'text-align': 'center'}),
                         dcc.Graph(id = 'world_map', figure=go.Figure())])
+            ]),
+            html.Div(id='right-column',  children = [
+                html.Div(id = 'new-container', style = {'display': 'flex', 'flex-direction': 'column'}, children= [
+                    dcc.Dropdown(id = 'chart-dropdown', options = [{'label': year, 'value': year} for year in sorted(YEARS)], value=YEARS[0]), 
+                    html.Div(style = {'display': 'flex'}, children = [
+                        dcc.Graph(id = 'pie-chart-cat', style={'flex': '1'}),
+                        dcc.Graph(id = 'pie-chart-sub',  style={'flex': '2'})])
+                ] ),
+                html.Div(id = 'graph-container',children = [dcc.Graph(figure = plot_bar(tmp3))])
             ])
     ])
 ])
@@ -98,7 +123,23 @@ def update_map(slected_year):
     Input('slct_year', 'value')
 )
 def update_mapname(year):
-    return "Order by Country in {0}".format(year)
+    return "Total Sales by Country in {0}".format(year)
+
+@app.callback(
+    Output('pie-chart-cat', 'figure'),
+    Input('chart-dropdown', 'value')
+)
+def update_pie_cat(year): 
+    tmp = df1[df1['Year'] == year].sort_values(by ='Category').reset_index(drop=True)
+    return plot_pie_cat(tmp)
+
+@app.callback(
+    Output('pie-chart-sub', 'figure'),
+    Input('chart-dropdown', 'value')
+)
+def update_pie_sub(year): 
+    tmp = df2[df2['Year'] == year].sort_values(by ='Sub-Category').reset_index(drop=True)
+    return plot_pie_sub(tmp)
 
 
 if __name__ == '__main__':

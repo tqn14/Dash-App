@@ -649,11 +649,11 @@ hr {
 }
 
 .rc-slider-dot-active, .rc-slider-handle {
-    border-color: #2cfec1 !important;
+    border-color: #7fafdf !important;
 }
 
 .rc-slider-track {
-    background-color: #2cfec1 !important
+    background-color: #7fafdf !important
 }
 
 .rc-slider-rail {
@@ -708,6 +708,29 @@ hr {
         margin-right: 1.5%;
         display: flex;
         flex-direction: column;
+        flex-grow: 1;
+        justify-content: flex-start;
+        align-content: center;
+        flex: 6 60%;
+    }
+}
+
+/* Right column
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+@media only screen and (max-width: 1250px) {
+    /*For mobile and smaller screens*/
+    #right-column {
+        margin-left: 1.5%;
+        width: 100%;
+    }
+}
+
+@media (min-width: 1251px) {
+    /*For desktop*/
+    #right-column {
+        margin-left: 1.5%;
+        display: flex;
+        flex-direction: column;
         justify-content: flex-start;
         align-content: center;
         flex: 6 60%;
@@ -718,10 +741,19 @@ hr {
 /* Graph
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
+#new-component {
+    background-color: #f9f9f9; /* Light grey background */
+    padding: 2rem; /* Padding around the content */
+    margin-bottom: 1rem; /* Space between this component and #graph-container */
+    text-align: center; /* Center-align the text */
+    border-radius: 8px; /* Rounded corners */
+}
+
 #graph-container {
     background-color: #f9f9f9;
-    padding: 5rem;
+    padding: 2rem;
     margin: 0;
+    border-radius: 8px; 
 }
 
 @media (max-width: 1250px) {
@@ -731,11 +763,15 @@ hr {
     }
 
     #graph-container {
-        margin-top: 5rem;
+        margin-top: 20px;
     }
 
     #selected-data {
         height: 55rem;
+    }
+
+    #new-container {
+        padding: 2.5rem; /* Adjust padding as needed */
     }
 }
 
@@ -762,6 +798,10 @@ hr {
     #selected-data {
         flex-grow: 1;
     }
+
+    #new-container {
+        padding: 1.5rem; /* Adjust padding as needed */
+    }
 }
 
 @media (max-width: 550px) {
@@ -775,6 +815,10 @@ hr {
 
     #selected-data .gtitle{
         font-size: 1.7rem !important;
+    }
+
+    #new-container {
+        padding: 1rem; /* Adjust padding as needed */
     }
 }
 
