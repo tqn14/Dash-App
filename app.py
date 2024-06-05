@@ -31,17 +31,25 @@ YEARS = tmp['Year'].unique().tolist()
 
 def plot_bar(df): 
     fig = px.bar(df, y = 'Product_ID_Cat', x= 'Values', color = 'Index', color_discrete_map={"Sales": "#ffaf4a", 'Profit': "#45b7c2"})
-    fig.update_layout(title = "Top 10 Selling Product 2012-2016", yaxis_title = "Product ID & Sub-Category")
+    fig.update_layout(yaxis_title = "Product ID & Sub-Category")
     return fig
 
 def plot_pie_cat(df): 
-    # tmp = df[df['Year'] == year].sort_values(by ='Category').reset_index(drop=True)
-    fig = px.pie(df, values = 'Sales', names = 'Category', color = 'Category', color_discrete_map={"Technology": "#2dc2c2", 'Furniture': "#f4b80f", "Office Supplies": "#de663e"}, width=350, height= 350)
+    fig = go.Figure(data = [go.Pie(
+        values = df["Sales"], 
+        labels = df['Category']
+    )])
+    fig.update_traces(marker = dict(colors = ["#2dc2c2", "#f4b80f", "#de663e"]), texttemplate = "%{percent:.1%}")
+    fig.update_layout(width=500, height=400)
     return fig
 
 def plot_pie_sub(df): 
-    # tmp = df[df['Year'] == year].sort_values(by ='Sub-Category').reset_index(drop=True)
-    fig = px.pie(df, values = 'Sales', names = 'Sub-Category', color = 'Sub-Category', color_discrete_sequence=px.colors.qualitative.T10 , width=350, height= 350)
+    fig = go.Figure(data = [go.Pie(
+            values = df['Sales'],
+            labels = df['Sub-Category'])],
+            )
+    fig.update_traces(marker = dict(colors = px.colors.qualitative.T10), texttemplate = "%{percent:.1%}")
+    fig.update_layout(width=500, height=400)
     return fig
 
 def plot_bb(df, limits): 
@@ -74,38 +82,50 @@ def plot_bb(df, limits):
 
 app = Dash(__name__)
 
-app.layout = html.Div(id ='root', children = [
-    html.Div(id = 'header', children=[
-        html.H4("Exploring Worldwide Retail Trends: Global Superstore", style={'text-align': 'center'})]),
-    html.Div(id = 'app-container', children = [ 
-            html.Div(id = 'left-column', 
-                children= [
-                html.Div(id="slider-container",
-                        children=[
-                        html.P(
-                            id="slider-text",
-                            children="Drag the slider to change the year:",
+app.layout = html.Div(
+    children = [
+        html.Div(children=[
+            html.H4("Exploring Worldwide Retail Trends: Global Superstore", style={'text-align': 'center'})
+        ]),
+        html.Div(
+            children = [
+                html.Div(id = 'left-column', 
+                    children= [
+                        html.Div(
+                            children = [
+                                html.P(
+                                        id="slider-text",
+                                        children="Drag the slider to change the year:",
+                                    ),
+                                dcc.Slider(id="slct_year",
+                                            min=min(YEARS),
+                                            max=max(YEARS),
+                                            value=min(YEARS),
+                                            step = 1,
+                                            marks={str(year): {"label": str(year), "style": {"color": "#7fafdf"}} for year in YEARS}),
+                                html.Div(children = [html.P("Order by Country in {0}".format(min(YEARS)), id = 'worldmap_name', style={'text-align': 'center', "font-size": "16px"}),
+                                    dcc.Graph(id = 'world_map', figure=go.Figure())])
+                            ], className= "pretty_container"
                         ),
-                        dcc.Slider(id="slct_year",
-                                min=min(YEARS),
-                                max=max(YEARS),
-                                value=min(YEARS),
-                                step = 1,
-                                marks={str(year): {"label": str(year), "style": {"color": "#7fafdf"}} for year in YEARS})]),
-                html.Div(id = 'heatmap-container', children = [html.P("Order by Country in {0}".format(min(YEARS)), id = 'worldmap_name', style={'text-align': 'center'}),
-                        dcc.Graph(id = 'world_map', figure=go.Figure())])
-            ]),
-            html.Div(id='right-column',  children = [
-                html.Div(id = 'new-container', style = {'display': 'flex', 'flex-direction': 'column'}, children= [
-                    dcc.Dropdown(id = 'chart-dropdown', options = [{'label': year, 'value': year} for year in sorted(YEARS)], value=YEARS[0]), 
-                    html.Div(style = {'display': 'flex'}, children = [
-                        dcc.Graph(id = 'pie-chart-cat', style={'flex': '1'}),
-                        dcc.Graph(id = 'pie-chart-sub',  style={'flex': '2'})])
-                ] ),
-                html.Div(id = 'graph-container',children = [dcc.Graph(figure = plot_bar(tmp3))])
-            ])
-    ])
-])
+                        html.Div(children = [
+                            html.H3("Top 10 Selling Products Globally 2012-2016"),
+                            dcc.Graph(figure = plot_bar(tmp3))], className="pretty_container"
+                        )
+                ]),
+                html.Div(id='right-column',  
+                    children = [
+                    html.Div(children= [
+                        dcc.Dropdown(id = 'chart-dropdown', options = [{'label': year, 'value': year} for year in sorted(YEARS)], value=YEARS[0]), 
+                        html.Div(children = [
+                            dcc.Graph(id = 'pie-chart-cat'),
+                            dcc.Graph(id = 'pie-chart-sub')
+                        ], style = {"display": "flex", "flex-direction": "column", "align-items": "center"})
+                    ], className="pretty_container")
+                ])
+            ], style = {"display": "grid", "grid-template-columns": "minmax(280px, 1fr) minmax(280px, 1fr)"}
+        )
+    ]
+)
 
 
 @app.callback(

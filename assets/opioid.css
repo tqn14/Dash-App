@@ -276,6 +276,7 @@ h2 {
 }
 
 h3 {
+    font-family: "Playfair Display", sans-serif;
     font-size: 3.0rem;
     line-height: 1.3;
     letter-spacing: -.1rem;
@@ -285,7 +286,7 @@ h3 {
 
 h4 {
     font-family: "Playfair Display", sans-serif;
-    font-size: 4rem;
+    font-size: 5rem;
     line-height: 1.35;
     letter-spacing: -.08rem;
     margin-bottom: 1.2rem;
@@ -662,10 +663,10 @@ hr {
 
 /* Heatmap
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-#heatmap-container {
+/* #heatmap-container {
     margin: 2.5rem 0 0 0;
     background-color: #f9f9f9;
-}
+} */
 
 #heatmap-title {
     margin: 0;
@@ -677,14 +678,14 @@ hr {
     flex-grow: 1;
 }
 
-@media (min-width: 1251px) {
+/* @media (min-width: 1251px) {
     #heatmap-container {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
     }
-}
+} */
 
 @media (max-width: 550px) {
     #county-choropleth .annotation-text{
@@ -769,10 +770,6 @@ hr {
     #selected-data {
         height: 55rem;
     }
-
-    #new-container {
-        padding: 2.5rem; /* Adjust padding as needed */
-    }
 }
 
 @media (min-width: 1251px) {
@@ -798,10 +795,6 @@ hr {
     #selected-data {
         flex-grow: 1;
     }
-
-    #new-container {
-        padding: 1.5rem; /* Adjust padding as needed */
-    }
 }
 
 @media (max-width: 550px) {
@@ -815,10 +808,6 @@ hr {
 
     #selected-data .gtitle{
         font-size: 1.7rem !important;
-    }
-
-    #new-container {
-        padding: 1rem; /* Adjust padding as needed */
     }
 }
 
@@ -902,3 +891,12 @@ div, svg {
 ._dash-undo-redo {
     display: none;
 }
+
+.pretty_container {
+    border-radius: 5px;
+    background-color: white;
+    margin: 10px;
+    padding: 15px;
+    position: relative;
+    box-shadow: 2px 2px lightgrey;
+  }
